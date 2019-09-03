@@ -1,0 +1,87 @@
+*nat
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+
+# firejail isolation
+#-A POSTROUTING -s 10.10.20.0/24 -o wlp3s0 -j MASQUERADE
+
+# Redirect russian's ip to vpn
+-A POSTROUTING -o tun5 -j MASQUERADE
+
+COMMIT
+
+*mangle
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+
+# Redirect russian's ip to vpn
+-A OUTPUT -p tcp -m multiport --dports 80,443 -m geoip --dst-cc RU -j MARK --set-mark 0xff75
+
+COMMIT
+
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+
+# Accepts all established inbound connections
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# Allow ping
+#  note that blocking other types of icmp packets is considered a bad idea by some
+#  remove -m icmp --icmp-type 8 from this line to allow all kinds of icmp:
+#  https://security.stackexchange.com/questions/22711
+-A INPUT -p icmp -m icmp --icmp-type 8 -j DROP
+
+# Allows all loopback (lo0) traffic and drop all traffic to 127/8 that doesn't use lo0
+-A INPUT -i lo -j ACCEPT
+-A INPUT ! -i lo -d 127.0.0.0/8 -j DROP
+
+# Allows SSH connections
+-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
+
+# Allows HTTP and HTTPS connections from anywhere (the normal ports for websites)
+-A INPUT -p tcp --dport 80 -j ACCEPT
+-A INPUT -p tcp --dport 443 -j ACCEPT
+
+# Allows bittorrent
+-A INPUT -p tcp --dport 6881:6999 -j ACCEPT
+
+# Allows UPnP connections
+-A INPUT -p udp -m multiport --dports 1900,5351,5353 -j ACCEPT
+-A INPUT -p tcp -m multiport --dports 49152 -j ACCEPT
+
+# Allows VNC connections
+#-A INPUT -p tcp --dport 5900 -j ACCEPT
+
+# Allows Samba
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 139 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 445 -j ACCEPT
+
+# log iptables denied calls (access via 'dmesg' command)
+-A INPUT -m limit --limit 5/min -j LOG --log-prefix "iptables denied: " --log-level 7
+
+#-A INPUT -j REJECT --reject-with icmp-host-prohibited
+
+# Accepts all established forward connections
+-A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+# Accepts br10 forward
+#-A FORWARD -s 10.10.20.0/24 -j ACCEPT
+
+# Redirect russian's ip to vpn
+-A FORWARD -o tun5 -j ACCEPT
+
+# add any specific blocks you want here
+# for example, prevent any port 25 forwarding (SMTP) from the sandbox
+# to help guard against mail spam
+#-A FORWARD -s wlp3s0 -p tcp --dport 25 -j DROP
+
+#-A FORWARD -j REJECT --reject-with icmp-host-prohibited
+
+COMMIT
