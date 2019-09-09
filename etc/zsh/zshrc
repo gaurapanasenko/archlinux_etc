@@ -7,16 +7,16 @@
 #-----------------------------
 # Source some stuff
 #-----------------------------
-if [[ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
-  . /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-fi
+#if [[ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+#  . /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+#fi
 
-ZSH_AUTOSUGGEST_USE_ASYNC=true
-ZSH_AUTOSUGGEST_STRATEGY=(history completion)
-ZSH_AUTOSUGGEST_IGNORE_WIDGETS+=(expand-or-complete)
-if [[ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
-  . /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-fi
+#ZSH_AUTOSUGGEST_USE_ASYNC=true
+#ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+#ZSH_AUTOSUGGEST_IGNORE_WIDGETS+=(expand-or-complete)
+#if [[ -f /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
+#  . /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+#fi
 
 #BASE16_SHELL="$HOME/.config/base16-shell/base16-default.dark.sh"
 #[[ -s $BASE16_SHELL ]] && source $BASE16_SHELL
@@ -76,10 +76,8 @@ bindkey "^[[F" end-of-line
 # to add other keys to this hash, see: man 5 terminfo
 typeset -g -A key
 
-#key[Home]="${terminfo[khome]}"
-#key[End]="${terminfo[kend]}"
-key[Home]="^[[H"
-key[End]="^[[F"
+key[Home]="${terminfo[khome]}"
+key[End]="${terminfo[kend]}"
 key[Insert]="${terminfo[kich1]}"
 key[Backspace]="${terminfo[kbs]}"
 key[Delete]="${terminfo[kdch1]}"
@@ -116,6 +114,7 @@ alias ls="ls --color -F"
 alias ll="ls --color -lh"
 alias gr="gvim --remote-silent"
 alias vr="vim --remote-silent"
+alias mc='mc -b'
 
 #------------------------------
 # ShellFuncs
@@ -223,7 +222,7 @@ setprompt
 
 # . /usr/share/powerline/zsh/powerline.zsh
 . /usr/local/share/powerlevel10k/powerlevel10k.zsh-theme
-POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(context dir vcs)
+POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(context dir virtualenv vcs)
 POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status root_indicator background_jobs ram battery time)
 POWERLEVEL9K_BATTERY_DISCONNECTED="blue"
 
